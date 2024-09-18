@@ -1,9 +1,9 @@
-[submodule "yalp_auth"]
+[submodule "auth"]
 	path = yalp_auth
 	url = https://github.com/SobirovAzizbekFarhodovich/yalp_auth.git
 [submodule "business_service"]
 	path = business_service
 	url = https://github.com/SobirovAzizbekFarhodovich/business_service.git
-[submodule "yalp_api"]
+[submodule "api"]
 	path = yalp_api
 	url = https://github.com/SobirovAzizbekFarhodovich/yalp_api.git
