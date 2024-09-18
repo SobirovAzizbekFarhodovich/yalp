@@ -1,0 +1,85 @@
+version: '1.0'
+
+services:
+  api-gateway:
+    container_name: gateway
+    build: ./api
+    depends_on:
+      - business-service
+    ports:
+      - "8082:8082"
+    networks:
+      - yalp
+    volumes:
+      - ./api:/home/sobirov/go/src/gitlab.com/yelp/api
+
+  auth-service:
+    container_name: auth_service
+    build: ./auth
+    depends_on: 
+      - business-service
+    ports:
+      - "8000:8000"
+    networks:
+      - yalp
+
+  business-service:
+    container_name: business_service
+    build: ./business_service
+    depends_on:
+      - postgres-db1
+    ports:
+      - "50051:50051"
+    networks:
+      - yalp
+    
+
+  postgres-db1:
+    container_name: business
+    image: postgres:16.3
+    environment:
+      POSTGRES_USER: azizbek
+      POSTGRES_PASSWORD: 123
+      # PGDATA: /data/postgres
+      POSTGRES_DB: business
+    volumes:
+     - postgres_data1:/var/lib/postgresql/data
+    #  - ./init-business-db.sh:/docker-entrypoint-initdb.d/init-business-db.sh
+    ports:
+      - "5421:5432"
+    networks:
+      - yalp
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d business"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+
+  migrate1:
+    image: migrate/migrate
+    networks: 
+      - yalp
+    volumes:
+      - ./business_service/migrations:/migrations
+    command: [ "-path", "/migrations", "-database", "postgres://azizbek:123@business:5432/business?sslmode=disable", "up" ]
+    depends_on:
+      - postgres-db1
+
+
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - yalp
+
+networks:
+  yalp:
+    driver: bridge
+
+volumes:
+  postgres_data1:
